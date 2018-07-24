@@ -6,10 +6,14 @@ metadata:
     component: elasticsearch
     role: client
 spec:
+  type: NodePort
   selector:
     component: elasticsearch
     role: client
   ports:
   - name: http
     port: 9200
-    protocol: TCP
+    nodePort: 30200
+  - name: transport
+    port: 9300
+    nodePort: 30300

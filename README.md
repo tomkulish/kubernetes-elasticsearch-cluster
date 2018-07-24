@@ -1,9 +1,10 @@
 # kubernetes-elasticsearch-cluster
-Elasticsearch (5.6.0) cluster on top of Kubernetes made easy.
+Elasticsearch (5.6.4) cluster on top of Kubernetes made easy.
+This has been adapted from https://github.com/pires/kubernetes-elasticsearch-cluster
 
 ### Table of Contents
 
-* [Important Notes](#important-notes)
+* [ClearEdge Changes](#important-notes)
 * [Pre-Requisites](#pre-requisites)
 * [Build-Images(optional)](#build-images)
 * [Test (deploying & accessing)](#test)
@@ -25,6 +26,49 @@ Elasticsearch best-practices recommend to separate nodes in three roles:
 Given this, I'm going to demonstrate how to provision a production grade scenario consisting of 3 master, 2 client and 2 data nodes.
 
 <a id="important-notes">
+
+## ClearEdge Changes
+
+* I have installed x-pack as default on these nodes
+* These builds are very much tied to our own docker containers here: https://gitlab.clearedgeit.com/tkulish/docker-jre --> https://gitlab.clearedgeit.com/tkulish/docker-elasticsearch --> https://gitlab.clearedgeit.com/tkulish/docker-elasticsearch-kubernetes --> This gets pushed up to https://hub.docker.com/r/tkulish/docker-elastic-kubernetes/ (Commands to build these are in their locations)
+
+
+### Starting
+It can be a bit finic-y with timing. Some nodes will restart until a master is found. Some nodes will wait for the data nodes to come up. Just give it a second.
+You should be able to browse to: http://r005sv003.lab.clearedgeit.com:30200/
+```
+
+kubectl create -f es-discovery-svc.yaml
+kubectl create -f es-svc.yaml
+kubectl create -f stateful/local-persistant-volumes.yaml
+kubectl create -f stateful/es-data-svc.yaml
+kubectl create -f es-master.yaml
+kubectl rollout status -f es-master.yaml
+kubectl create -f es-client.yaml
+kubectl rollout status -f es-client.yaml
+kubectl create -f stateful/es-data-stateful.yaml
+kubectl rollout status -f stateful/es-data-stateful.yaml
+
+# Old way
+kubectl create -f es-discovery-svc.yaml
+kubectl create -f es-svc.yaml
+kubectl create -f stateful/local-persistant-volumes.yaml
+kubectl create -f stateful/es-data-svc.yaml
+kubectl create -f stateful/es-data-stateful.yaml
+kubectl create -f es-master.yaml
+# Hold for a second, then run this
+kubectl create -f es-client.yaml
+```
+
+### Shutdown
+```
+kubectl delete -f stateful/es-data-stateful.yaml
+kubectl delete -f stateful/es-data-svc.yaml
+kubectl delete -f es-client.yaml
+kubectl delete -f es-master.yaml
+kubectl delete -f es-svc.yaml
+kubectl delete -f es-discovery-svc.yaml
+```
 
 ## (Very) Important notes
 
